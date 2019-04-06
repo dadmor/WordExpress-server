@@ -1,0 +1,15 @@
+{
+  "public": {
+    "uploads": "http://wordexpress.dev/wp-content/uploads/",
+    "amazonS3": false
+  },
+  "private": {
+    "wp_prefix": "wp_",
+    "database": {
+      "name": "exampledb",
+      "username": "exampleuser",
+      "password": "examplepass",
+      "host": "localhost"
+    }
+  }
+}
