@@ -10,6 +10,8 @@ $ npm install
 $ npm run start
 ```
 
+if you have problem with babel use yarn
+
 Using the `/config/sample-config.json` as a template, create a `development.json` and `production.json` config file. These files will contain the connection details to your development and production WordPress databases, respectively.
 
 ## Extending the Schema
