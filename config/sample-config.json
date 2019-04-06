@@ -6,10 +6,10 @@
   "private": {
     "wp_prefix": "wp_",
     "database": {
-      "name": "wpexpress_dev",
-      "username": "root",
-      "password": "",
-      "host": "127.0.0.1"
+      "name": "exampledb",
+      "username": "exampleuser",
+      "password": "examplepass",
+      "host": "localhost"
     }
   }
 }
