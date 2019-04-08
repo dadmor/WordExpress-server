@@ -14,6 +14,9 @@ const PostQuery = `
   extend type Post {
     children: [Post]
   }
+  extend type Category {
+    term_name: String
+  }
 `
 
 const PostResolver = {
@@ -52,6 +55,20 @@ const PostResolver = {
         order: [
           ['menu_order', 'ASC']
         ]
+      })
+    }
+  },
+  Category: {
+    term_name: (root) => {
+      // console.log('md', models.Terms);
+      return models.TermTaxonomy.findOne({
+        attributes: ['taxonomy'],
+        where: {
+          term_id: root.dataValues.term_id
+        }
+      }).then(result => {
+        // console.log(result)
+        return result.dataValues.taxonomy
       })
     }
   }
