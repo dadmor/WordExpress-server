@@ -1,9 +1,15 @@
 import {models} from '../db'
 import {map} from 'lodash'
 
+
+
+
 const PostQuery = `
   extend type Query{
     postsWithChildren(post_type: String = "post", limit: Int, skip: Int, order: OrderInput): [Post]
+  }
+  extend type Query{
+    getFilteredPosts: [Category]
   }
   extend type Post {
     children: [Post]
@@ -16,15 +22,25 @@ const PostResolver = {
       const orderBy = order ? [order.orderBy, order.direction] : ['menu_order', 'ASC']
       return models.Post.findAll({
         where: {
-          post_type,
-          post_status: 'publish',
-          post_parent: 0
+
         },
         order: [orderBy],
         limit: limit,
         offset: skip
       })
     },
+    getFilteredPosts(_) {
+      return models.TermRelationships.findAll({
+        where: {
+        object_id: postId
+      },
+      })
+    // return this.get(`movies/${id}`);
+
+      
+      // return RESTDataSource.get('http://localhost:8080/wp-json/wp/v2/place?filter[city]=warszawa');
+      return [{id:RESTDataSource}]
+    }
   },
   Post: {
     children: (root) => {
