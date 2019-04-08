@@ -6,65 +6,82 @@ const TermsQuery = `
   }
 `
 
+function getPosts(ids = 0) {
+  let params = (ids)? {
+    where: {
+      id: {
+        $in: ids
+      }
+    },
+    logging: console.log
+  }: {logging: console.log};
+  return models.Post.findAll(params).then(r => {
+    // console.log('posts', r)
+    return r
+  })
+}
+
 const TermsResolver = {
-	Query: {
-		terms(_, ref) {
-			// console.log(ref);
+  Query: {
+    terms(_, ref) {
+      // console.log(ref);
+      // 
+      if (!ref.city) {
+        return getPosts()
+      }
 
-			return models.TermRelationships.findAll({
-				where: {
-					term_taxonomy_id: ref.city
-				},
-				// logging: console.log
-			}).then(rs => {
-				let dv = rs.map(function (r) {
-					return r.dataValues.object_id;
-				});
+      return models.TermRelationships.findAll({
+        where: {
+          term_taxonomy_id: ref.city
+        },
+        // logging: console.log
+      }).then(rs => {
+        let dv = rs.map(function (r) {
+          return r.dataValues.object_id;
+        });
 
-				// console.log('city', dv)
+        // console.log('city', dv)
+        // console.log(ref.activity)
+        if (!ref.activity) {
+          return getPosts(dv)
+        }
 
-				return models.TermRelationships.findAll({
-					where: {
-						term_taxonomy_id: ref.activity
-					}
-				}).then(rd => {
-					let dvd = rd.map(function (r) {
-						return r.dataValues.object_id;
-					});
+        return models.TermRelationships.findAll({
+          where: {
+            term_taxonomy_id: ref.activity
+          }
+        }).then(rd => {
+          let dvd = rd.map(function (r) {
+            return r.dataValues.object_id;
+          });
 
-					// console.log('activity', dvd)
+          // console.log('activity', dvd)
+          if (!ref.ageGroup) {
+            let cl = _lodash.intersection(dv, dvd)            
+            return getPosts(cl)
+          }
 
-					return models.TermRelationships.findAll({
-						where: {
-							term_taxonomy_id: ref.ageGroup
-						}
-					}).then(rf => {
-						let dvr = rf.map(function (r) {
-							return r.dataValues.object_id;
-						});
+          return models.TermRelationships.findAll({
+            where: {
+              term_taxonomy_id: ref.ageGroup
+            }
+          }).then(rf => {
+            let dvr = rf.map(function (r) {
+              return r.dataValues.object_id;
+            });
 
-						// console.log('ageGroup', dvr)
+            // console.log('ageGroup', dvr)
 
-						let cl = _lodash.intersection(dv, dvd, dvr)
+            let cl = _lodash.intersection(dv, dvd, dvr)            
 
-						console.log(cl)
+            // console.log(cl)
 
-						return models.Post.findAll({
-							where: {
-								id: {
-									$in: cl
-								}
-							},
-							logging: console.log
-						}).then(r => {
-							// console.log('posts', r)
-							return r
-						})
-					})
-				})
-			})
-		}
-	}
+            return getPosts(cl)
+          })
+        })
+      })
+    }
+  }
 }
 
 var _lodash = require('lodash');
