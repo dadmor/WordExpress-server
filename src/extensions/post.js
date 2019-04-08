@@ -15,7 +15,7 @@ const PostQuery = `
     children: [Post]
   }
   extend type Category {
-    term_name: String
+    taxonomy_name: String
   }
 `
 
@@ -59,7 +59,7 @@ const PostResolver = {
     }
   },
   Category: {
-    term_name: (root) => {
+    taxonomy_name: (root) => {
       // console.log('md', models.Terms);
       return models.TermTaxonomy.findOne({
         attributes: ['taxonomy'],
