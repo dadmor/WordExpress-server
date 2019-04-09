@@ -1,8 +1,18 @@
 import {models} from '../db'
+import Database from '../db'
+
+var _sequelize2 = require('sequelize')
 
 const TermsQuery = `
   extend type Query {
-    terms(city: Int = 0, activity: Int = 0, ageGroup: Int = 0): [Post]
+    terms(city: Int = 0, activity: Int = 0, ageGroup: Int = 0): [Post],
+    filters(taxonomy: String, ids: String = ""): [FilterResult]
+  }
+  type FilterResult {
+    term_id: Int
+    name: String
+    slug: String
+    taxonomy: String
   }
 `
 
@@ -80,6 +90,27 @@ const TermsResolver = {
           })
         })
       })
+    },
+    filters(_, ref) {
+      // console.log('term_ids', ref.ids.split(','))
+      let q = "SELECT DISTINCT t.term_id, t.name, t.slug, tt.taxonomy FROM `wp_terms` t LEFT JOIN wp_term_relationships tr ON (tr.term_taxonomy_id = t.term_id) LEFT JOIN wp_term_taxonomy tt ON (tt.term_id = t.term_id) WHERE tt.taxonomy LIKE :taxonomy"
+      if (ref.ids) {
+        q += " AND tr.object_id IN (SELECT DISTINCT object_id FROM `wp_term_relationships` WHERE `term_taxonomy_id` IN (:ids))"
+      }
+
+      var _sequelize = require('sequelize');
+
+      return Database.connection.query(q, {
+        replacements: {
+          taxonomy: ref.taxonomy,
+          ids: ref.ids.split(',').map(r => parseInt(r))
+        },
+        type: _sequelize.QueryTypes.SELECT,
+        // logging: console.log
+      }).then(filters => {
+          // console.log('filter res', filters)
+          return filters
+        })
     }
   }
 }
