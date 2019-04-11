@@ -6,7 +6,8 @@ var _sequelize = require('sequelize')
 const TermsQuery = `
   extend type Query {
     terms(taxonomies: String): [Post],
-    filters(taxonomy: String, ids: String = ""): [FilterResult]
+    filters(taxonomy: String, ids: String = ""): [FilterResult],
+    search(what: String!): [Post]
   }
   type FilterResult {
     term_id: Int
@@ -53,6 +54,25 @@ const TermsResolver = {
         // logging: console.log
       }).then(result => {
         return getPosts(result.map(r => r.object_id))
+      })
+    },
+    search(_, ref) {
+      return models.Post.findAll({
+        where: {
+          $or: [
+            {
+              post_content: {
+                $like: "%"+ref.what+"%"
+              }
+            },
+            {
+              post_title: {
+                $like: "%"+ref.what+"%"
+              }
+            }
+          ]
+        },
+        // logging: console.log
       })
     },
     filters(_, ref) {
