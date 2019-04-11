@@ -1,11 +1,11 @@
 import {models} from '../db'
 import Database from '../db'
 
-var _sequelize2 = require('sequelize')
+var _sequelize = require('sequelize')
 
 const TermsQuery = `
   extend type Query {
-    terms(city: Int = 0, activity: Int = 0, ageGroup: Int = 0): [Post],
+    terms(taxonomies: String): [Post],
     filters(taxonomy: String, ids: String = ""): [FilterResult]
   }
   type FilterResult {
@@ -36,59 +36,23 @@ const TermsResolver = {
     terms(_, ref) {
       // console.log(ref);
       // 
-      if (!ref.city) {
+      if (!ref.taxonomies) {
         return getPosts()
       }
 
-      return models.TermRelationships.findAll({
-        where: {
-          term_taxonomy_id: ref.city
+      let q = "SELECT object_id FROM `wp_term_relationships` WHERE `term_taxonomy_id` IN (:ids) group by object_id having count(*) = :length"
+
+      let ids = ref.taxonomies.split(',').map(r => parseInt(r)) 
+
+      return Database.connection.query(q, {
+        replacements: {
+          length: ids.length,
+          ids: ids
         },
+        type: _sequelize.QueryTypes.SELECT,
         // logging: console.log
-      }).then(rs => {
-        let dv = rs.map(function (r) {
-          return r.dataValues.object_id;
-        });
-
-        // console.log('city', dv)
-        // console.log(ref.activity)
-        if (!ref.activity) {
-          return getPosts(dv)
-        }
-
-        return models.TermRelationships.findAll({
-          where: {
-            term_taxonomy_id: ref.activity
-          }
-        }).then(rd => {
-          let dvd = rd.map(function (r) {
-            return r.dataValues.object_id;
-          });
-
-          // console.log('activity', dvd)
-          if (!ref.ageGroup) {
-            let cl = _lodash.intersection(dv, dvd)            
-            return getPosts(cl)
-          }
-
-          return models.TermRelationships.findAll({
-            where: {
-              term_taxonomy_id: ref.ageGroup
-            }
-          }).then(rf => {
-            let dvr = rf.map(function (r) {
-              return r.dataValues.object_id;
-            });
-
-            // console.log('ageGroup', dvr)
-
-            let cl = _lodash.intersection(dv, dvd, dvr)            
-
-            // console.log(cl)
-
-            return getPosts(cl)
-          })
-        })
+      }).then(result => {
+        return getPosts(result.map(r => r.object_id))
       })
     },
     filters(_, ref) {
