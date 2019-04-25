@@ -13,6 +13,7 @@ const PostQuery = `
   }
   extend type Post {
     children: [Post]
+    geo_data: String
   }
   extend type Category {
     taxonomy_name: String
@@ -55,6 +56,21 @@ const PostResolver = {
         order: [
           ['menu_order', 'ASC']
         ]
+      })
+    },
+    geo_data: (root) => {
+      let res = models.Postmeta.findOne({
+        attributes: ["meta_value"],
+        where: {
+          post_id: root.dataValues.id,
+          meta_key: "geo_data"
+        }
+      })
+      return res.then((res) => {
+        if (res) {
+          return res.meta_value
+        }
+        return ""
       })
     }
   },
