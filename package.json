@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "@mapbox/geojson-merge": "^1.0.2",
     "apollo-server": "^2.0.0",
     "config": "^1.28.1",
     "graphql": "^0.13.2",
