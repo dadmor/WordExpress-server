@@ -11,7 +11,7 @@ const PostQuery = `
   }
   extend type Post {
     children: [Post]
-    geo_data: String
+    geo_data: FeatureCollection
   }
   extend type Category {
     taxonomy_name: String
@@ -112,7 +112,7 @@ const PostResolver = {
       })
       return res.then((res) => {
         if (res) {
-          return res.meta_value
+          return JSON.parse(res.meta_value)
         }
         return ""
       })
